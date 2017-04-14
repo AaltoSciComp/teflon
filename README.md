@@ -1,4 +1,4 @@
-# Teflon: LD_PRELOAD to prevent manipulations of stick bit and groups
+# Teflon: LD_PRELOAD to prevent manipulations of group sticky bit and gid
 
 This library uses LD_PRELOAD to override the chmod and chown family of
 functions, so that programs can not:
@@ -14,15 +14,17 @@ not well tested.
 
 These functions are overridden:
 - chmod, fchmod, fchmodat
-  - These result in an extra stat call
+  - These result in an extra stat call to find the previous sticky bit
+    status, then insert this into the requested mode using bit operators.
 - chown, fchown, lchown, fchownat
-  - These change 
+  - These change the group option to -1 unconditionally, so that the
+    group is never changed.
+
 
 # Installation
 
-Run make, then copy the teflon shell script and teflon.so to the same
-directory.  Run the shell script.  Currently there is nothing more
-advanced.
+Run make, then copy the resulting `teflon` program to a place to be
+used.  This is both the LD_PRELOAD library and wrapper to execute it.
 
 
 # References

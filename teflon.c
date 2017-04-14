@@ -4,18 +4,25 @@
  * Modeled with pride from eatmydata:
  * https://github.com/stewartsmith/libeatmydata/blob/master/libeatmydata/libeatmydata.c
  *
- * Copyright Richard Darst.
+ * Copyright Richard Darst
+ * Created at Aalto University
  * GPLv3+
  *
  */
 #define _GNU_SOURCE
 #include <dlfcn.h>
+#include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+// The sticky bit: 02000
 static STICKY = S_ISGID;
+// This function takes old mode and replaces just the sticky bit with
+// the value from the stat results buf.
 #define NEW_MODE(buf, mode) ((buf.st_mode & STICKY) | (mode & ~STICKY));
 
 // These automatically find the original function and set it in the
@@ -24,7 +31,6 @@ static STICKY = S_ISGID;
   libc_##name = (libc_##name##_t)(intptr_t)dlsym(RTLD_NEXT, #name);\
   if (!libc_##name || dlerror())\
     _exit(1);
-
 #define ASSIGN_DLSYM_IF_EXIST(name)\
   libc_##name = (libc_##name##_t)(intptr_t)dlsym(RTLD_NEXT, #name);\
   dlerror();
@@ -58,29 +64,32 @@ void __attribute__ ((constructor)) eatmydata_init(void)
 }
 
 /*
- * Chmod functions: stat the file, change sticky bit to what it was before.
+ * Chmod functions: stat the file, change sticky bit to what it was
+ * before.  This requires statting the original file again to get the
+ * previous value of the sticky bit.
  */
 int chmod(const char *pathname, mode_t mode) {
   struct stat buf;
   int ret = stat(pathname, &buf);
-  if (ret != 0) { return ret; }
-  mode = NEW_MODE(buf, mode)
+  // How do we handle errors?  For now, simply do nothing.
+  if (ret == 0)
+    mode = NEW_MODE(buf, mode);
   return libc_chmod(pathname, mode);
 }
 
 int fchmod(int fd, mode_t mode) {
   struct stat buf;
   int ret = fstat(fd, &buf);
-  if (ret != 0) { return ret; }
-  mode = NEW_MODE(buf, mode)
+  if (ret == 0)
+    mode = NEW_MODE(buf, mode);
   return libc_fchmod(fd, mode);
 }
 
 int fchmodat(int dirfd, const char *pathname, mode_t mode, int flags) {
   struct stat buf;
   int ret = fstatat(dirfd, pathname, &buf, flags);
-  if (ret != 0) { return ret; }
-  mode = NEW_MODE(buf, mode)
+  if (ret == 0)
+    mode = NEW_MODE(buf, mode);
   return libc_fchmodat(dirfd, pathname, mode, flags);
 }
 
@@ -101,4 +110,33 @@ int lchown(const char *pathname, uid_t owner, gid_t group) {
 
 int fchownat(int dirfd, const char *pathname, uid_t owner, gid_t group, int flags) {
   return libc_fchownat(dirfd, pathname, owner, -1, flags);
+}
+
+
+int main(int argc, char **argv) {
+  //printf("%d %s %s\n", argc, argv[0], argv[1]);
+  // Usage
+  if (argc == 1 || (argc>1 && strcmp(argv[1], "-h")==0) || (argc>1 && strcmp(argv[1], "--help")==0)) {
+    printf("Usage: %s program [args [...]]\n", argv[0]);
+    exit(1);
+  }
+
+  // Merge this program's path to LD_PRELOAD if it exists already.
+  char *ld_preload = argv[0];
+  char *old_ld_preload = getenv("LD_PRELOAD");
+  if (old_ld_preload != NULL) {
+    char *ld_preload = malloc(strlen(ld_preload)+strlen(old_ld_preload)+2);
+    strcat(ld_preload, argv[0]);
+    strcat(ld_preload, ":");
+    strcat(ld_preload, old_ld_preload);
+  }
+
+  // Run the program
+  setenv("LD_PRELOAD", ld_preload, 1);
+  execvp(argv[1], argv+1);
+
+  // Only get here if exec fails.
+  fprintf(stderr, "%s FAILED: could not exec %s (%d: %s)\n",
+	  argv[0], argv[1], errno, strerror(errno));
+  return 2;
 }
