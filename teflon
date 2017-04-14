@@ -1,3 +1,2 @@
 #!/bin/bash
-set -x
-LD_PRELOAD=$(dirname $0)/teflon.so "$@"
+LD_PRELOAD=$(dirname $0)/teflon.so exec "$@"

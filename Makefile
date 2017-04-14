@@ -1,4 +1,4 @@
 
 teflon.so: teflon.c
-	gcc -shared -fPIC $< -o $@ -ldl
+	gcc -g -shared -fPIC -pie -rdynamic $< -o $@ -ldl
 
