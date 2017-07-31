@@ -1,7 +1,7 @@
 /*
- * Teflon: prevent programs from changing sticky bits on files.
+ * Teflon: prevent programs from changing setgid bits or groups on files.
  *
- * Modeled with pride from eatmydata:
+ * Modeled with pride and derived from eatmydata:
  * https://github.com/stewartsmith/libeatmydata/blob/master/libeatmydata/libeatmydata.c
  *
  * Copyright Richard Darst
@@ -19,11 +19,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-// The sticky bit: 02000
-static STICKY = S_ISGID;
-// This function takes old mode and replaces just the sticky bit with
+// The setgid bit: 02000
+static SETGID = S_ISGID;
+// This macro takes old mode and replaces just the setgid with
 // the value from the stat results buf.
-#define NEW_MODE(buf, mode) ((buf.st_mode & STICKY) | (mode & ~STICKY));
+#define NEW_MODE(buf, mode) ((buf.st_mode & SETGID) | (mode & ~SETGID));
 
 // These automatically find the original function and set it in the
 // libc_$NAME variable.  Copied from eatmydata.
@@ -64,9 +64,9 @@ void __attribute__ ((constructor)) eatmydata_init(void)
 }
 
 /*
- * Chmod functions: stat the file, change sticky bit to what it was
+ * Chmod functions: stat the file, change setgid bit to what it was
  * before.  This requires statting the original file again to get the
- * previous value of the sticky bit.
+ * previous value of the bit.
  */
 int chmod(const char *pathname, mode_t mode) {
   struct stat buf;

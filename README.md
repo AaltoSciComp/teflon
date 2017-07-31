@@ -1,12 +1,12 @@
-# Teflon: LD_PRELOAD to prevent manipulations of group sticky bit and gid
+# Teflon: LD_PRELOAD to prevent manipulations of setgid bit and gid
 
 This library uses LD_PRELOAD to override the chmod and chown family of
 functions, so that programs can not:
-- Change the sticky bit of files
+- Change the setgid bit of files
 - Change the group of files
 
 The purpose is usage on filesystems where quota is by groups, not by
-users, and use the group sticky bit to preserve the group of newly
+users, and use the setgid bit to preserve the group of newly
 created files.
 
 This is still conceptual, and both the code and support scripts are
@@ -14,7 +14,7 @@ not well tested.
 
 These functions are overridden:
 - chmod, fchmod, fchmodat
-  - These result in an extra stat call to find the previous sticky bit
+  - These result in an extra stat call to find the previous setgid bit
     status, then insert this into the requested mode using bit operators.
 - chown, fchown, lchown, fchownat
   - These change the group option to -1 unconditionally, so that the
