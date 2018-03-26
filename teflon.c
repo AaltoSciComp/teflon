@@ -121,14 +121,16 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
+  // Run with teflon
   // Merge this program's path to LD_PRELOAD if it exists already.
   char *ld_preload = argv[0];
   char *old_ld_preload = getenv("LD_PRELOAD");
   if (old_ld_preload != NULL) {
-    char *ld_preload = malloc(strlen(ld_preload)+strlen(old_ld_preload)+2);
+    char *ld_preload2 = malloc(strlen(ld_preload)+strlen(old_ld_preload)+2);
+    ld_preload = ld_preload2;  // Somehow needed to prevent segfaults.
     strcat(ld_preload, argv[0]);
-    strcat(ld_preload, ":");
-    strcat(ld_preload, old_ld_preload);
+    strcat(ld_preload+strlen(argv[0]), ":");
+    strcat(ld_preload+strlen(argv[0])+1, old_ld_preload);
   }
 
   // Run the program
