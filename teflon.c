@@ -20,7 +20,7 @@
 #include <unistd.h>
 
 // The setgid bit: 02000
-static SETGID = S_ISGID;
+#define SETGID S_ISGID
 // This macro takes old mode and replaces just the setgid with
 // the value from the stat results buf.
 #define NEW_MODE(buf, mode) ((buf.st_mode & SETGID) | (mode & ~SETGID));
