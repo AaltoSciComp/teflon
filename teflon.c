@@ -121,6 +121,53 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
+  // Un-teflonize.  Search through LD_PRELOAD and remove teflon, keep
+  // everything else the same.  As expected, doing this in C is close
+  // to the worst thing ever.
+  if (argc > 1 && strcmp(argv[1], "-u") == 0) {
+    char *old_ld_preload = getenv("LD_PRELOAD"); // Mutable variable, updated as we progress through.
+    if (old_ld_preload != NULL) {
+      char *ld_preload = malloc(strlen(old_ld_preload));  // New LD_PRELOAD.  starts empty.
+      int pos = 0;                                        // Position within NEW ld_preload for next append.
+      while (1) {
+	// Separate on ':'.  old_start is first token, old_ld_preload
+	// updated to point to rest.
+	char *old_start = strsep(&old_ld_preload, ":");
+	// If nothing more, break.
+	if (old_start == NULL) {
+	  // Remove previous : if it exists.  Always added to end if
+	  // pos>0.
+	  if (pos > 0) {
+	    ld_preload[pos-1] = '\0';
+	  }
+	  break;
+	}
+	// If "teftlon" found anywhere in this string, do not use this
+	// component.
+	if (strstr(old_start, "teflon") != NULL) {
+	  continue;
+	}
+	// Update new LD_PRELOAD, append ':', and update next
+	// start_position in preload.  SECURITY: ld_preload can never
+	// be longer than the original ld_preload, and that is how
+	// much memory we allocated.
+	strcpy(ld_preload+pos, old_start);
+	strcpy(ld_preload+pos+strlen(old_start), ":");
+	pos += strlen(old_start)+1;
+      }
+
+      //printf("new LD_PRELOAD: '%s'\n", ld_preload);
+      setenv("LD_PRELOAD", ld_preload, 1);
+      //unsetenv("LD_PRELOAD");
+    }
+    execvp(argv[2], argv+2);
+
+    fprintf(stderr, "%s FAILED: could not exec %s (%d: %s)\n",
+	    argv[0], argv[1], errno, strerror(errno));
+    return 2;
+
+  }
+
   // Run with teflon
   // Merge this program's path to LD_PRELOAD if it exists already.
   char *ld_preload = argv[0];
