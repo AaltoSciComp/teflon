@@ -117,7 +117,10 @@ int main(int argc, char **argv) {
   //printf("%d %s %s\n", argc, argv[0], argv[1]);
   // Usage
   if (argc == 1 || (argc>1 && strcmp(argv[1], "-h")==0) || (argc>1 && strcmp(argv[1], "--help")==0)) {
-    printf("Usage: %s program [args [...]]\n", argv[0]);
+    printf("Usage: %s [-u] program [args [...]]\n", argv[0]);
+    printf("\n");
+    printf("Run a program, preventing group and setgid bit changes.");
+    printf("  -u: un-teflonize the program", argv[0]);
     exit(1);
   }
 
