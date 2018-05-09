@@ -125,6 +125,11 @@ int main(int argc, char **argv) {
   // everything else the same.  As expected, doing this in C is close
   // to the worst thing ever.
   if (argc > 1 && strcmp(argv[1], "-u") == 0) {
+    if (argc == 2) {
+      printf("Specify program to run with -u\n");
+      exit(1);
+    }
+
     char *old_ld_preload = getenv("LD_PRELOAD"); // Mutable variable, updated as we progress through.
     if (old_ld_preload != NULL) {
       char *ld_preload = malloc(strlen(old_ld_preload));  // New LD_PRELOAD.  starts empty.
