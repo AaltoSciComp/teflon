@@ -20,6 +20,22 @@ These functions are overridden:
   - These change the group option to -1 unconditionally, so that the
     group is never changed.
 
+# Usage
+
+## As LD_PRELOAD
+
+Simply add the path to `./teflon` to LD_PRELOAD and it will take
+effect for all programs.
+
+## As a command line program
+
+Simply run any progrem using `./teflon prog [arg] ...` and this one
+program will be run after setting LD_PRELOAD for you.
+
+## To undo the effect of teflon for one program.
+
+Run `./teflon -u prog [arg] ...` and
+
 
 # Installation
 
