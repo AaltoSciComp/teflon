@@ -40,7 +40,8 @@ Run `./teflon -u prog [arg] ...` and
 # Installation
 
 Run make, then copy the resulting `teflon` program to a place to be
-used.  This is both the LD_PRELOAD library and wrapper to execute it.
+used.  This single binary is both the LD_PRELOAD library and wrapper
+to execute it, even though it doesn't have the `.so` extension.
 
 
 # References
