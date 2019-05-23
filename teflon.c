@@ -6,7 +6,7 @@
  *
  * Copyright Richard Darst
  * Created at Aalto University
- * GPLv3+
+ * GPLv3
  *
  */
 #define _GNU_SOURCE

@@ -45,6 +45,7 @@ to execute it, even though it doesn't have the `.so` extension.
 
 
 # References
-- Inspired and adapted from eatmydata:
+- Inspired and adapted from eatmydata.  Template code is directly
+  copied from here, and thus teflon is GPLv3:
   - https://github.com/stewartsmith/libeatmydata/
   - https://github.com/stewartsmith/libeatmydata/blob/master/libeatmydata/libeatmydata.c
